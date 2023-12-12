@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maze Game</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(to bottom, #1e3799, #9fd8df);
+        }
+
+        #maze {
+            display: grid;
+            grid-template-columns: repeat(25, 20px);
+            gap: 2px;
+            border: 2px solid #fff;
+        }
+
+        .cell {
+            width: 20px;
+            height: 20px;
+            background-color: #1e3799;
+            border: 1px solid #3c6382;
+        }
+
+        .obstacle {
+            background-color: #e74c3c;
+        }
+
+        .player {
+            background-color: #3498db;
+        }
+
+        .finish {
+            background-color: #2ecc71;
+        }
+    </style>
+</head>
+<body>
+    <div id="maze"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const maze = document.getElementById('maze');
+            const gridSize = 25;
+            const totalCells = gridSize * gridSize;
+
+            // Generate maze grid
+            for (let row = 0; row < gridSize; row++) {
+                for (let col = 0; col < gridSize; col++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    maze.appendChild(cell);
+                }
+            }
+
+            // Add obstacles
+            const obstaclePercentage = 0.3; // 30% of the maze will be obstacles
+            const obstacleCount = Math.floor(totalCells * obstaclePercentage);
+
+            for (let i = 0; i < obstacleCount; i++) {
+                let randomPosition;
+                do {
+                    randomPosition = Math.floor(Math.random() * totalCells);
+                } while (
+                    maze.children[randomPosition].classList.contains('obstacle') ||
+                    isPlayerOrFinish(randomPosition)
+                );
+
+                maze.children[randomPosition].classList.add('obstacle');
+            }
+
+            // Set player and finish positions
+            const playerStartPosition = 0;
+            let playerPosition = playerStartPosition;
+
+            const finishPosition = totalCells - 1;
+
+            maze.children[playerPosition].classList.add('player');
+            maze.children[finishPosition].classList.add('finish');
+
+            // Handle keyboard input
+            document.addEventListener('keydown', function (event) {
+                const key = event.key;
+
+                switch (key) {
+                    case 'ArrowUp':
+                        movePlayer(-gridSize);
+                        break;
+                    case 'ArrowDown':
+                        movePlayer(gridSize);
+                        break;
+                    case 'ArrowLeft':
+                        movePlayer(-1);
+                        break;
+                    case 'ArrowRight':
+                        movePlayer(1);
+                        break;
+                }
+            });
+
+            // Move the player and check for victory
+            function movePlayer(offset) {
+                const currentPlayerCell = maze.children[playerPosition];
+                const newPlayerPosition = playerPosition + offset;
+                const newPlayerCell = maze.children[newPlayerPosition];
+
+                if (newPlayerCell && !newPlayerCell.classList.contains('obstacle')) {
+                    currentPlayerCell.classList.remove('player');
+                    playerPosition = newPlayerPosition;
+                    newPlayerCell.classList.add('player');
+
+                    if (playerPosition === finishPosition) {
+                        alert('Congratulations! You made it through the maze!');
+                        resetGame();
+                    }
+                }
+            }
+
+            // Check if the cell contains the player or finish
+            function isPlayerOrFinish(position) {
+                const cell = maze.children[position];
+                return cell.classList.contains('player') || cell.classList.contains('finish');
+            }
+
+            // Reset the game
+            function resetGame() {
+                maze.querySelectorAll('.player, .finish').forEach((cell) => cell.classList.remove('player', 'finish'));
+
+                playerPosition = playerStartPosition;
+                maze.children[playerPosition].classList.add('player');
+                maze.children[finishPosition].classList.add('finish');
+            }
+        });
+    </script>
+</body>
+</html>
